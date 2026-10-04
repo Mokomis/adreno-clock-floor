@@ -38,26 +38,27 @@ Either change alone made no measurable difference in testing. They are switched 
 
 Both are off by default.
 
-- **Only while streaming.** A foreground service watches which app is in front. It applies the chosen floor while Punktfunk (`io.unom.punktfunk` or `io.unom.punktfunk.mokomis`) is in front and restores stock when another app is. This avoids the heat and battery cost outside a stream. It checks every two seconds and shows a persistent notification.
+- **Only while streaming.** A foreground service watches which app is in front. It applies the chosen floor while Punktfunk (`io.unom.punktfunk` or `io.unom.punktfunk.mokomis`) is in front and restores stock when another app is. This avoids the heat and battery cost outside a stream. It checks every two seconds and shows a persistent notification. **It is not reliable on ColorOS**, which stops the watcher in the background; see below.
 - **Apply at startup.** After a reboot, the app applies the chosen floor again. With **Only while streaming** on, it restarts the watcher instead, so the floor still applies only during a stream.
 
 > [!CAUTION]
-> **1225 MHz: proceed with caution.** It is the GPU's top clock. Holding it there continuously could lead to overheating. That has not been shown: in a four-minute test the GPU reached 74–78 °C against a chip threshold of 105 °C and nothing throttled. The system thermal status did rise to severe, but that came from the tablet's surface estimate, not from the GPU. On this tablet light, moderate and severe are only 1 °C apart: the surface estimate at 48, 49 and 50 °C. "Severe" here means a surface of about 50 °C; see [What "severe" means here](#what-severe-means-here). Longer sessions, a hot room, a case, or charging while playing were not tested.
+> **1225 MHz: proceed with caution.** It is the GPU's top clock. Holding it there continuously could lead to overheating. With the ordinary 4:2:0 decode load that has not been shown: in a four-minute test the GPU reached 74–78 °C against a chip threshold of 105 °C and nothing throttled. Under a heavier load it has: decoding 4:4:4 video at this floor, the tablet cut the GPU clock to 646 MHz after about 13 minutes. The system thermal status reads severe well before that, and it tracks the tablet's surface, not the GPU: the service lists light, moderate and severe at a surface estimate of 48, 49 and 50 °C. See [What "severe" means here](#what-severe-means-here). Long sessions, a hot room, a case, or charging while playing were not tested.
 >
 > 1225 MHz is not an overclock. It is the highest level in the tablet's own Adreno driver table (`max_clock_mhz` reads 1225) and the published maximum for the Adreno 829, and the stock tablet reaches it by itself in short bursts. What this app changes is how long the GPU stays there.
 
 Choosing 1225 MHz always asks for confirmation first, and the app shows a standing warning while 1225 MHz is the chosen floor, because either option will then apply it without asking again.
 
-### Keeping the watcher alive on ColorOS
+### The watcher does not survive on ColorOS
 
-ColorOS stops background apps aggressively. Before any exemption it killed the watcher within a minute of the app leaving the screen, which leaves the GPU at whatever was last written.
+ColorOS stops background apps aggressively, and **Only while streaming** depends on a background watcher. When the watcher is stopped, the GPU stays at whatever was last written, which is stock if you were outside Punktfunk at the time.
 
-With the following in place the watcher ran for the whole test: three minutes on the home screen with the driver at stock, then the chosen floor applied when Punktfunk came to the front.
+- With no exemptions, ColorOS killed the watcher within a minute of the app leaving the screen.
+- With background activity allowed in the app's settings, and the battery-optimization and background exemptions that turning the option on applies through root (`dumpsys deviceidle whitelist +…`, `appops set … RUN_ANY_IN_BACKGROUND allow`), it ran through a first test: three minutes on the home screen at stock, then the chosen floor when Punktfunk came to the front.
+- It did not last. On the same tablet, with those exemptions still in place, ColorOS killed it twice more over the following hours while it was running as a foreground service. A later stream started at stock with the switch still showing on.
 
-- **Background activity allowed** for GPU Clock Floor in the tablet's app settings. This is a manual step.
-- **Exempt from battery optimization, and allowed to run in the background.** Turning **Only while streaming** on applies both through root (`dumpsys deviceidle whitelist +…`, `appops set … RUN_ANY_IN_BACKGROUND allow`).
+Swiping the app away in the recent-apps list also stops it. Opening the app starts the watcher again whenever its switch is on.
 
-Which of these is strictly required was not isolated. Swiping the app away in the recent-apps list still stops the watcher; lock its card there if your ColorOS version offers that. Opening the app starts the watcher again whenever its switch is on.
+**Use a manual floor.** Set it with the buttons before you play and tap **Restore stock** afterwards. A manual floor stays set when the app is closed or killed.
 
 **Apply at startup** was not tested with a reboot. ColorOS has a separate auto-launch list, and the app may need to be allowed there for it to start after boot.
 
@@ -76,33 +77,42 @@ OPPO Pad Mini, stock Qualcomm Vulkan driver, PyroWave video decode at 2520×1680
 | 1150 MHz | 4.1 ms | 70–74 °C |
 | 1225 MHz | 3.8–3.9 ms | 74–78 °C |
 
-At 1225 MHz the system thermal status rose from moderate to severe within three minutes. No throttling was seen in the four minutes measured; longer sessions were not tested. At 1150 MHz the status stayed at moderate through four minutes, with the GPU temperature still rising slowly at the end. 925 MHz gave no gain and is not offered.
+These are 4:2:0 streams at 144 Hz. At 120 Hz the same stream decodes in 3.9–4.1 ms at the 1225 MHz floor with the GPU about 42% busy.
+
+At 1225 MHz the system thermal status rose from moderate to severe within three minutes on an already warm tablet. No throttling was seen in the four minutes measured. At 1150 MHz the status stayed at moderate through four minutes, with the GPU temperature still rising slowly at the end. 925 MHz gave no gain and is not offered. None of these 4:2:0 runs was long enough to show where the temperatures level off.
+
+### A heavier load does get throttled
+
+Decoding 4:4:4 at 2520×1680 and 120 Hz is about twice the work. At the 1225 MHz floor it decoded in 6.6 ms and held 120 fps; at stock it took 10 ms and fell to 86 fps, so here the floor is required. The GPU was about 74% busy.
+
+From a cool start the GPU climbed to 88 °C and the surface estimate to 49.5 °C. After about 13.5 minutes, four of them at severe, the tablet cut the GPU clock from 1225 to 646 MHz. The floor does not prevent this: the system's thermal limit overrides it, which is how it should work.
+
+Lowering the floor to 1025 MHz afterwards did not cool the tablet. Eight minutes later the GPU was at 83 °C and the surface estimate unchanged. The heat follows the amount of decoding, not the floor.
 
 ### What "severe" means here
 
-Android's thermal status is the worst level reported by any sensor, and on this tablet two very different sensors matter:
+Android's thermal status is one number from 0 to 6. On this tablet two very different sensors could set it:
 
 | | Skin (estimated surface) | GPU chip |
 |---|---|---|
 | What it measures | How hot the outside of the tablet is | The temperature inside the GPU |
 | Light / moderate / severe | 48 / 49 / 50 °C | none / none / 105 °C |
 | Critical / shutdown | 60 / 90 °C | none / 125 °C |
-| Reading at 1225 MHz | about 50 °C | 74–78 °C |
 
-These are the thresholds the tablet's thermal service reports (`dumpsys thermalservice`). "Skin" is an estimate of the surface temperature calculated from internal sensors, and it is the only sensor with light and moderate levels. So every status of 1, 2 or 3 in these tests came from the surface estimate.
+These are the thresholds the tablet's thermal service lists (`dumpsys thermalservice`). "Skin" is an estimate of the surface temperature calculated from internal sensors, and it is the only sensor with light and moderate levels. In every run the status moved with the surface estimate while the GPU stayed far below 105 °C. So "severe" here means the tablet is getting hot to hold, not that the GPU is near its limit.
 
-"Severe" at 1225 MHz therefore meant the tablet was getting hot to hold, at about 50 °C, while the GPU was still roughly 27 °C below its own limit. The surface limit exists for comfort and safety in the hand. With the tablet on a stand and not held, a warm surface matters less to you, and the chip still has room.
+The listed numbers are not the whole rule. In the longest run the status reached moderate at about 45 °C and severe at 48.2 °C, earlier than the table says. ColorOS has its own thermal manager (`horae`), which works from the shell sensors on the front, back and frame, and its policy files are encrypted on the device. What it does at each level could not be read.
 
-Two cautions. The system does not know whether the tablet is being held, so ColorOS may still react to the surface estimate by limiting frame rate, brightness or performance; what it does at each level was not traced. And the three low levels sit only 2 °C apart, so the status climbs quickly once the tablet is warm, with the next step, critical, 10 °C further on.
+The clock cut described above came with the GPU at 88 °C, 17 °C under the chip's own trip point, so it was not the chip protecting itself. It came from that thermal manager or from the battery current limiter, which can also throttle the GPU; which of the two was not established. Either way the surface limit also protects the battery and the screen behind it. This app leaves those limits alone, and you should too.
 
 ## Test status
 
 Tested on one OPPO Pad Mini OPD2515, ColorOS 16, KernelSU, on October 4, 2026:
 
 - Manual floors and **Restore stock**: working. A manual floor stays set after the app is closed.
-- **Only while streaming**: working with the keep-alive steps above. Stock on the home screen, the chosen floor with Punktfunk in front.
+- **Only while streaming**: not reliable. It worked in a first test and ColorOS later killed the watcher twice despite the exemptions.
 - **Apply at startup**: not tested.
-- The 1225 MHz confirmation and standing warning: not exercised on the device.
+- The 1225 MHz confirmation: shown and accepted on the device. The standing warning was not checked.
 
 ## Safety behavior
 
