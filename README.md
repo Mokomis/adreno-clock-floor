@@ -26,7 +26,7 @@ Both are off by default.
 - **Apply at startup.** After a reboot, the app applies the chosen floor again. With **Only while streaming** on, it restarts the watcher instead, so the floor still applies only during a stream.
 
 > [!CAUTION]
-> **1225 MHz: proceed with caution.** It is the GPU's top clock. Holding it there continuously could lead to overheating. That has not been shown: in a four-minute test the GPU reached 74–78 °C against a driver throttle threshold of 105 °C, nothing throttled, and the system thermal status rose to severe. Longer sessions, a hot room, a case, or charging while playing were not tested.
+> **1225 MHz: proceed with caution.** It is the GPU's top clock. Holding it there continuously could lead to overheating. That has not been shown: in a four-minute test the GPU reached 74–78 °C against a chip threshold of 105 °C and nothing throttled. The system thermal status did rise to severe, but that came from the tablet's surface estimate reaching about 50 °C, not from the GPU; see [What "severe" means here](#what-severe-means-here). Longer sessions, a hot room, a case, or charging while playing were not tested.
 >
 > 1225 MHz is not an overclock. It is the highest level in the tablet's own Adreno driver table (`max_clock_mhz` reads 1225) and the published maximum for the Adreno 829, and the stock tablet reaches it by itself in short bursts. What this app changes is how long the GPU stays there.
 
@@ -61,6 +61,23 @@ OPPO Pad Mini, stock Qualcomm Vulkan driver, PyroWave video decode at 2520×1680
 | 1225 MHz | 3.8–3.9 ms | 74–78 °C |
 
 At 1225 MHz the system thermal status rose from moderate to severe within three minutes. No throttling was seen in the four minutes measured; longer sessions were not tested. At 1150 MHz the status stayed at moderate through four minutes, with the GPU temperature still rising slowly at the end. 925 MHz gave no gain and is not offered.
+
+### What "severe" means here
+
+Android's thermal status is the worst level reported by any sensor, and on this tablet two very different sensors matter:
+
+| | Skin (estimated surface) | GPU chip |
+|---|---|---|
+| What it measures | How hot the outside of the tablet is | The temperature inside the GPU |
+| Light / moderate / severe | 48 / 49 / 50 °C | none / none / 105 °C |
+| Critical / shutdown | 60 / 90 °C | none / 125 °C |
+| Reading at 1225 MHz | about 50 °C | 74–78 °C |
+
+These are the thresholds the tablet's thermal service reports (`dumpsys thermalservice`). "Skin" is an estimate of the surface temperature calculated from internal sensors, and it is the only sensor with light and moderate levels. So every status of 1, 2 or 3 in these tests came from the surface estimate.
+
+"Severe" at 1225 MHz therefore meant the tablet was getting hot to hold, at about 50 °C, while the GPU was still roughly 27 °C below its own limit. The surface limit exists for comfort and safety in the hand. With the tablet on a stand and not held, a warm surface matters less to you, and the chip still has room.
+
+Two cautions. The system does not know whether the tablet is being held, so ColorOS may still react to the surface estimate by limiting frame rate, brightness or performance; what it does at each level was not traced. And the three low levels sit only 2 °C apart, so the status climbs quickly once the tablet is warm, with the next step, critical, 10 °C further on.
 
 ## Test status
 
