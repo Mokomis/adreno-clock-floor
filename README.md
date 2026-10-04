@@ -13,6 +13,14 @@ That makes decode time depend on the GPU clock. At 144 frames per second each fr
 
 This only helps when the GPU does the decoding. Codecs that use the hardware video decoder, such as AV1 or HEVC, leave the GPU idle during a stream and gain nothing from a floor.
 
+### Local games
+
+The other use is games that run on the tablet itself and render on its GPU, such as Steam games through a compatibility layer. A floor stops the driver from dropping the clock during lighter moments and ramping back up when the scene gets heavy, which is one cause of uneven frame times. Holding the clock up aims at a steadier, more consistent frame rate.
+
+This use was **not measured**. A floor sets the GPU's minimum clock; it does not raise its maximum, so it cannot lift a frame rate the GPU already struggles to reach at full speed. Expect the gain, if any, in consistency, and the same extra heat and battery drain.
+
+**Only while streaming** watches for Punktfunk only. For a local game, set a floor with the buttons and use **Restore stock** when you finish.
+
 ## What it does
 
 The app writes two values under `/sys/class/kgsl/kgsl-3d0`:
