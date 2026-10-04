@@ -26,7 +26,7 @@ Both are off by default.
 - **Apply at startup.** After a reboot, the app applies the chosen floor again. With **Only while streaming** on, it restarts the watcher instead, so the floor still applies only during a stream.
 
 > [!CAUTION]
-> **1225 MHz: proceed with caution.** It is the GPU's top clock. Holding it there continuously could lead to overheating. That has not been shown: in a four-minute test the GPU reached 74–78 °C against a chip threshold of 105 °C and nothing throttled. The system thermal status did rise to severe, but that came from the tablet's surface estimate reaching about 50 °C, not from the GPU; see [What "severe" means here](#what-severe-means-here). Longer sessions, a hot room, a case, or charging while playing were not tested.
+> **1225 MHz: proceed with caution.** It is the GPU's top clock. Holding it there continuously could lead to overheating. That has not been shown: in a four-minute test the GPU reached 74–78 °C against a chip threshold of 105 °C and nothing throttled. The system thermal status did rise to severe, but that came from the tablet's surface estimate, not from the GPU. On this tablet light, moderate and severe are only 1 °C apart: the surface estimate at 48, 49 and 50 °C. "Severe" here means a surface of about 50 °C; see [What "severe" means here](#what-severe-means-here). Longer sessions, a hot room, a case, or charging while playing were not tested.
 >
 > 1225 MHz is not an overclock. It is the highest level in the tablet's own Adreno driver table (`max_clock_mhz` reads 1225) and the published maximum for the Adreno 829, and the stock tablet reaches it by itself in short bursts. What this app changes is how long the GPU stays there.
 
