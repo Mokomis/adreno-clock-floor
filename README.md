@@ -5,6 +5,14 @@ GPU Clock Floor is a small root utility for the **OPPO Pad Mini OPD2515** (Snapd
 > [!WARNING]
 > This app writes to the Adreno kernel driver's tunables as root. A clock floor makes the tablet run hotter and drain the battery faster in every app, not only while streaming. Root access is mandatory. Use this software at your own risk.
 
+## Why it exists
+
+[Punktfunk](https://git.unom.io/unom/punktfunk) is a low-latency game-streaming app: a host PC encodes its screen and a client, here the tablet, decodes and shows it. With Punktfunk's PyroWave codec, the tablet decodes every video frame on the **GPU**, as a Vulkan compute job, instead of on the chip's dedicated video decoder.
+
+That makes decode time depend on the GPU clock. At 144 frames per second each frame is a few milliseconds of GPU work followed by a short idle gap. The stock Adreno driver treats those gaps as a chance to save power: it lowers the clock and powers the GPU down between frames, so each frame starts slow. Holding the clock up shortens decode, from about 5.4–5.9 ms to 4.3–4.6 ms at the 1025 MHz floor in testing.
+
+This only helps when the GPU does the decoding. Codecs that use the hardware video decoder, such as AV1 or HEVC, leave the GPU idle during a stream and gain nothing from a floor.
+
 ## What it does
 
 The app writes two values under `/sys/class/kgsl/kgsl-3d0`:
