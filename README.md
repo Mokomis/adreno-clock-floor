@@ -25,6 +25,11 @@ Both are off by default.
 - **Only while streaming.** A foreground service watches which app is in front. It applies the chosen floor while Punktfunk (`io.unom.punktfunk` or `io.unom.punktfunk.mokomis`) is in front and restores stock when another app is. This avoids the heat and battery cost outside a stream. It checks every two seconds and shows a persistent notification.
 - **Apply at startup.** After a reboot, the app applies the chosen floor again. With **Only while streaming** on, it restarts the watcher instead, so the floor still applies only during a stream.
 
+> [!CAUTION]
+> **1225 MHz: proceed with caution.** It is the GPU's top clock. Holding it there continuously could lead to overheating. That has not been shown: in a four-minute test the GPU reached 74–78 °C against a driver throttle threshold of 105 °C, nothing throttled, and the system thermal status rose to severe. Longer sessions, a hot room, a case, or charging while playing were not tested.
+>
+> 1225 MHz is not an overclock. It is the highest level in the tablet's own Adreno driver table (`max_clock_mhz` reads 1225) and the published maximum for the Adreno 829, and the stock tablet reaches it by itself in short bursts. What this app changes is how long the GPU stays there.
+
 Choosing 1225 MHz always asks for confirmation first, and the app shows a standing warning while 1225 MHz is the chosen floor, because either option will then apply it without asking again.
 
 ### Keeping the watcher alive on ColorOS
