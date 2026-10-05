@@ -149,6 +149,14 @@ The manual buttons need only root. The options add:
 
 Requires JDK 17 or newer and Android SDK platform 36.
 
+## Other tools for this tablet
+
+Separate root utilities for the OPPO Pad Mini OPD2515. Each works by itself.
+
+- [Wi-Fi 7 Toggle](https://github.com/Mokomis/WiFi-7-Toggle): enables or restores the tablet's 6 GHz / Wi-Fi 7 band capability.
+- [Refresh Manager](https://github.com/Mokomis/opd2515-refresh-manager): lets any app use 144 Hz, or locks an app to 60, 120 or 144 Hz.
+- [Low-latency audio](https://github.com/Mokomis/opd2515-low-latency-audio): documents how ColorOS keeps apps off the low-latency audio paths, with a script to allow chosen apps.
+
 ## License
 
 GPL-3.0-only. See [LICENSE](LICENSE).
